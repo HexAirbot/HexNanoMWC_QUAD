@@ -1276,7 +1276,7 @@ void loop () {
       static uint8_t isAltHoldChanged = 0;
       #if defined(ALTHOLD_FAST_THROTTLE_CHANGE)
         if (abs(rcCommand[THROTTLE]-initialThrottleHold) > ALT_HOLD_THROTTLE_NEUTRAL_ZONE) {
-          errorAltitudeI = 0;
+         //errorAltitudeI = 0;
           isAltHoldChanged = 1;
           rcCommand[THROTTLE] += (rcCommand[THROTTLE] > initialThrottleHold) ? -ALT_HOLD_THROTTLE_NEUTRAL_ZONE : ALT_HOLD_THROTTLE_NEUTRAL_ZONE;          
          // initialThrottleHold += (rcCommand[THROTTLE] > initialThrottleHold) ? -ALT_HOLD_THROTTLE_NEUTRAL_ZONE : ALT_HOLD_THROTTLE_NEUTRAL_ZONE;; //++hex nano
@@ -1296,7 +1296,7 @@ void loop () {
             AltHold += AltHoldCorr/500;
             AltHoldCorr %= 500;
           }
-          errorAltitudeI = 0;
+          //errorAltitudeI = 0;
           isAltHoldChanged = 1;
         } else if (isAltHoldChanged) {
           AltHold = EstAlt;
