@@ -522,13 +522,13 @@ void hex_nano_sonar_update(){
   
     uint8_t indexplus1 = (sonarHistIdx + 1);
     if (indexplus1 == SONAR_TAB_SIZE) indexplus1 = 0;
-    sonarHistTab[sonarHistIdx] = hex_nano_sonar_get_height();
+    sonarHistTab[sonarHistIdx] = hex_nano_sonar_get_raw_height();
     sonarHeightSum += sonarHistTab[sonarHistIdx];
     sonarHeightSum -= sonarHistTab[indexplus1];
     sonarHistIdx = indexplus1;  
 }
 
-int16_t hex_nano_sonar_get_height() {
+int16_t hex_nano_sonar_get_raw_height() {
   if (SRF02_ready() == 0) {
     //still busy with a reading.
     //return last reading
@@ -552,8 +552,8 @@ int16_t hex_nano_sonar_get_height() {
   }
 }
 
-uint16_t hex_nano_get_estimated_height(){
-    return sonarHeightSum / SONAR_TAB_SIZE;
+uint16_t hex_nano_get_refined_height(){  
+  return sonarHeightSum / SONAR_TAB_SIZE;
 }
 
 /* ############################################################################ */
@@ -1307,9 +1307,12 @@ void loop () {
         #endif
       case 2:
         taskOrder++;
+        break;
+        /*
         #if BARO
           if (getEstimatedAltitude() !=0) break;
-        #endif    
+        #endif 
+       */   
       case 3:
         taskOrder++;
         #if GPS
@@ -1336,9 +1339,12 @@ void loop () {
 
        case 5:
         #if defined(HEX_NANO)
-        sonarAlt = sonarAlt * 0.8 + hex_nano_get_estimated_height() * 0.2;
+        getEstimatedAltitude();
+        /*
+        sonarAlt = hex_nano_get_refined_height() ;
         debug[2] = sonarAlt;
         debug[0] = 111;
+        */
         #endif
         break;
     }
