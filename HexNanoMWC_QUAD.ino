@@ -9,6 +9,7 @@ March  2013     V2.2
 */
 
 #include <avr/io.h>
+#include <Wire.h>
 
 #include "config.h"
 #include "def.h"
@@ -504,6 +505,107 @@ static struct {
   static int32_t baroPressure;
   static int32_t baroTemperature;
   static int32_t baroPressureSum;
+#endif
+
+#if defined(HEX_NANO)
+static int32_t sonarHeightSum = 0;
+
+#define SRF02 112  //240
+
+int16_t height = 0;
+
+#define SONAR_TAB_SIZE   21
+
+void hex_nano_sonar_update(){
+    static int32_t sonarHistTab[SONAR_TAB_SIZE];
+    static uint8_t sonarHistIdx = 0;
+  
+    uint8_t indexplus1 = (sonarHistIdx + 1);
+    if (indexplus1 == SONAR_TAB_SIZE) indexplus1 = 0;
+    sonarHistTab[sonarHistIdx] = hex_nano_sonar_get_height();
+    sonarHeightSum += sonarHistTab[sonarHistIdx];
+    sonarHeightSum -= sonarHistTab[indexplus1];
+    sonarHistIdx = indexplus1;  
+}
+
+int16_t hex_nano_sonar_get_height() {
+  if (SRF02_ready() == 0) {
+    //still busy with a reading.
+    //return last reading
+    //could perhaps do prediction based on velocity and time
+    return height;
+  } else {
+    //new reading available
+    unsigned int readrange = SRF02_range();
+
+    double echotime = (double) readrange;
+    //ultrasonic sensor is set to microseconds for echo to come back. 
+    //so using speed of sound we calculate distance. more accurate than 1cm increment setting
+    //we divide by 2 because the echo time to to the distance and back again.
+    int16_t newheight = (int16_t)(echotime/1000000*340.29/2*100); //times 100 to go from meter to cm.
+    
+    //height = (height * 0.9) + (newheight * 0.1); //smoothes out noise a bit.
+    SRF02_ping(); // initiate a new ping so that it is ready next time we read.
+    //return height;
+    
+    return newheight;
+  }
+}
+
+uint16_t hex_nano_get_estimated_height(){
+    return sonarHeightSum / SONAR_TAB_SIZE;
+}
+
+/* ############################################################################ */
+
+void SRF02_ping() {
+  Wire.beginTransmission(SRF02); // transmit to device #112 (0x70)
+                                 // the address specified in the datasheet is 224 (0xE0)
+                                 // but i2c adressing uses the high 7 bits so it's 112
+  Wire.write(byte(0x00));        // sets register pointer to the command register (0x00)  
+  Wire.write(byte(0x52));        // command sensor to measure in "inches" (0x50) 
+                                 // use 0x51 for centimeters
+                                 // use 0x52 for ping microseconds
+  Wire.endTransmission();        // stop transmitting  
+}
+
+int SRF02_ready() {
+  // step 3: instruct sensor to return a particular echo reading
+  Wire.beginTransmission(SRF02);
+  Wire.write(byte(0x00));     
+  Wire.endTransmission();     
+  Wire.requestFrom(int(SRF02), 1);    // request 2 bytes from slave device #112
+  if(1 <= Wire.available())    // if two bytes were received
+  {
+    int reading = Wire.read();  // receive high byte (overwrites previous reading)
+    return reading;   // print the reading
+  } else {
+    return 0;
+  }
+}
+
+unsigned int SRF02_range() {
+  unsigned int reading = 0;
+  // step 3: instruct sensor to return a particular echo reading
+  Wire.beginTransmission(SRF02); // transmit to device #112
+  Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
+  Wire.endTransmission();      // stop transmitting
+
+  // step 4: request reading from sensor
+  Wire.requestFrom(SRF02, 2);    // request 2 bytes from slave device #112
+
+  // step 5: receive reading from sensor
+  if(2 <= Wire.available())    // if two bytes were received
+  {
+    reading = Wire.read();  // receive high byte (overwrites previous reading)
+    reading = reading << 8;    // shift high byte to be high 8 bits
+    reading |= Wire.read(); // receive low byte as lower 8 bits
+    return reading;
+  } else {
+    return 0;
+  }
+}
+
 #endif
 
 void annexCode() { // this code is excetuted at each loop and won't interfere with control loop if it lasts less than 650 microseconds
@@ -1224,6 +1326,19 @@ void loop () {
         #endif
         #ifdef VARIOMETER
           if (f.VARIO_MODE) vario_signaling();
+        #endif
+        
+        #if defined(HEX_NANO)
+        
+        hex_nano_sonar_update();
+        
+        #endif
+
+       case 5:
+        #if defined(HEX_NANO)
+        sonarAlt = sonarAlt * 0.8 + hex_nano_get_estimated_height() * 0.2;
+        debug[2] = sonarAlt;
+        debug[0] = 111;
         #endif
         break;
     }

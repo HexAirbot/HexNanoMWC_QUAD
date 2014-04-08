@@ -330,10 +330,12 @@ uint8_t getEstimatedAltitude(){
  
     BaroPID = constrain(BaroPID, -200, 200);
 
+    /*
     debug[0] = vel;
     debug[1] = error16;
     debug[2] = BaroPID;
     debug[3] = AltHold;
+    */
 
     /*
     //D
