@@ -289,16 +289,24 @@ uint8_t getEstimatedAltitude(){
       accZoffset += accZ;
     }  
     accZ -= accZoffset>>3;
+    
+    
+    debug[0] = accZ;
  
    //applyDeadband(accZ, ACC_Z_DEADBAND);
 
     static float vel = 0.0f;
     static float accVelScale = 9.80665f / 10000.0f / acc_1G ;
 
+    static float previewVel = 0.0f;
+
+    previewVel = vel;
+
+
     //I
     // Integrator - velocity, cm/sec
     vel += accZ * accVelScale * dTime;
-
+    
     static int32_t lastBaroAlt;
     int16_t baroVel = (EstAlt - lastBaroAlt) * 1000000.0f / dTime;
     lastBaroAlt = EstAlt;
@@ -308,24 +316,32 @@ uint8_t getEstimatedAltitude(){
 
     // apply Complimentary Filter to keep the calculated velocity based on baro velocity (i.e. near real velocity). 
     // By using CF it's possible to correct the drift of integrated accZ (velocity) without loosing the phase, i.e without delay
-    vel = vel * 0.985f+ baroVel * 0.015f;
+   
+    static float alpha=0.8;
+    
+    static float beta=1-alpha;
+    
+    vel = vel * alpha+ baroVel * beta;
+   
+   
+   // vel = vel * 0.985f+ baroVel * 0.015f;
     
     int16_t error16 = targetVel - vel;    
-    BaroPID = constrain((conf.P8[PIDALT] * error16 >>7), -200, +200);
+    BaroPID = constrain((conf.P8[PIDALT] * error16 >>7), -400, +400);
    
     errorAltitudeI += conf.I8[PIDALT] * error16 >>6;
     errorAltitudeI = constrain(errorAltitudeI,-30000,30000);
     BaroPID += errorAltitudeI>>8; //I in range +/-60
  
-    BaroPID = constrain(BaroPID, -200, 200);
+    //BaroPID = constrain(BaroPID, -200, 200);
 
-    /*
-    debug[0] = vel;
-    debug[1] = error16;
-    debug[2] = BaroPID;
-    debug[3] = AltHold;
-    */
+    //debug[0] = vel;
+    debug[1] = conf.P8[PIDALT];
+    debug[2] = conf.I8[PIDALT];
+    //debug[3] = AltHold;
+    debug[3] = conf.D8[PIDALT];
 
+    
     /*
     //D
     int16_t vel_tmp = vel;
@@ -334,6 +350,12 @@ uint8_t getEstimatedAltitude(){
  
     BaroPID -= constrain(conf.D8[PIDALT] * vel_tmp >>4, -150, 150);
     */
+    
+    int16_t acc_tmp = (vel - previewVel) * 1000000.0f / dTime;
+    applyDeadband(acc_tmp, 5);
+    
+    BaroPID -= constrain(conf.D8[PIDALT] * acc_tmp >>4, -400, 400);
+   
   #endif
   return 1;
 }
