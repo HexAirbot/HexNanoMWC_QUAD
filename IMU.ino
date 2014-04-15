@@ -273,6 +273,10 @@ uint8_t getEstimatedAltitude(){
   if (dTime < UPDATE_INTERVAL) return 0;
   previousT = currentT;
   
+  debug[2] = EstAlt;
+  
+  debug[1] = hex_nano_get_refined_height();
+  
   EstAlt = EstAlt * alpha + hex_nano_get_refined_height() * (1 - alpha); // additional LPF to reduce baro noise (faster by 30 µs)
   debug[2] = EstAlt;
 
@@ -291,7 +295,7 @@ uint8_t getEstimatedAltitude(){
     accZ -= accZoffset>>3;
     
     
-    debug[0] = accZ;
+   // debug[0] = accZ;
  
    //applyDeadband(accZ, ACC_Z_DEADBAND);
 
@@ -336,10 +340,10 @@ uint8_t getEstimatedAltitude(){
     //BaroPID = constrain(BaroPID, -200, 200);
 
     //debug[0] = vel;
-    debug[1] = conf.P8[PIDALT];
-    debug[2] = conf.I8[PIDALT];
+    //debug[1] = conf.P8[PIDALT];
+    //debug[2] = conf.I8[PIDALT];
     //debug[3] = AltHold;
-    debug[3] = conf.D8[PIDALT];
+    //debug[3] = conf.D8[PIDALT];
 
     
     /*

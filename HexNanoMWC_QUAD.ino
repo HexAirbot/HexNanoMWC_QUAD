@@ -20,7 +20,7 @@ March  2013     V2.2
 
 #if defined(HEX_NANO)
 volatile uint16_t serialRcValue[RC_CHANS] = {1502, 1502, 1502, 1502, 1502, 1502, 1502, 1502}; 
-float alpha = 0.5;
+float alpha = 0.9;
 uint8_t paramList[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #endif
 
@@ -524,6 +524,7 @@ void hex_nano_sonar_update(){
   
     uint8_t indexplus1 = (sonarHistIdx + 1);
     if (indexplus1 == SONAR_TAB_SIZE) indexplus1 = 0;
+    
     sonarHistTab[sonarHistIdx] = hex_nano_sonar_get_raw_height();
     sonarHeightSum += sonarHistTab[sonarHistIdx];
     sonarHeightSum -= sonarHistTab[indexplus1];
@@ -531,20 +532,22 @@ void hex_nano_sonar_update(){
 }
 
 int16_t hex_nano_sonar_get_raw_height() {
+  static unsigned int newheight;
+  
   if (SRF02_ready() == 0) {
     //still busy with a reading.
     //return last reading
     //could perhaps do prediction based on velocity and time
-    return height;
+    return newheight;
   } else {
     //new reading available
-    unsigned int readrange = SRF02_range();
+    newheight = SRF02_range();
 
-    double echotime = (double) readrange;
+   // double echotime = (double) readrange;
     //ultrasonic sensor is set to microseconds for echo to come back. 
     //so using speed of sound we calculate distance. more accurate than 1cm increment setting
     //we divide by 2 because the echo time to to the distance and back again.
-    int16_t newheight = (int16_t)(echotime/1000000*340.29/2*100); //times 100 to go from meter to cm.
+    //int16_t newheight = (int16_t)(echotime/1000000*340.29/2*100); //times 100 to go from meter to cm.
     
     //height = (height * 0.9) + (newheight * 0.1); //smoothes out noise a bit.
     SRF02_ping(); // initiate a new ping so that it is ready next time we read.
@@ -555,7 +558,7 @@ int16_t hex_nano_sonar_get_raw_height() {
 }
 
 uint16_t hex_nano_get_refined_height(){  
-  return sonarHeightSum / SONAR_TAB_SIZE;
+  return sonarHeightSum / (SONAR_TAB_SIZE - 1);
 }
 
 /* ############################################################################ */
@@ -565,7 +568,7 @@ void SRF02_ping() {
                                  // the address specified in the datasheet is 224 (0xE0)
                                  // but i2c adressing uses the high 7 bits so it's 112
   Wire.write(byte(0x00));        // sets register pointer to the command register (0x00)  
-  Wire.write(byte(0x52));        // command sensor to measure in "inches" (0x50) 
+  Wire.write(byte(0x51));        // command sensor to measure in "inches" (0x50) 
                                  // use 0x51 for centimeters
                                  // use 0x52 for ping microseconds
   Wire.endTransmission();        // stop transmitting  
@@ -599,10 +602,20 @@ unsigned int SRF02_range() {
   // step 5: receive reading from sensor
   if(2 <= Wire.available())    // if two bytes were received
   {
+     byte highByte = Wire.read();                          // Get high byte
+    byte lowByte = Wire.read();                           // Get low byte
+
+    int range = (highByte << 8) + lowByte;               // Put them together
+    
+    debug[0] = range;
+    
+    return range;
+    /*
     reading = Wire.read();  // receive high byte (overwrites previous reading)
     reading = reading << 8;    // shift high byte to be high 8 bits
     reading |= Wire.read(); // receive low byte as lower 8 bits
     return reading;
+    */
   } else {
     return 0;
   }
@@ -1295,7 +1308,7 @@ void loop () {
  
   } else { // not in rc loop
     static uint8_t taskOrder=0; // never call all functions in the same loop, to avoid high delay spikes
-    if(taskOrder>4) taskOrder-=5;
+    if(taskOrder>5) taskOrder-=6;
     switch (taskOrder) {
       case 0:
         taskOrder++;
@@ -1338,16 +1351,20 @@ void loop () {
         hex_nano_sonar_update();
         
         #endif
+        
+        break;
 
        case 5:
-        #if defined(HEX_NANO)
+         taskOrder++;
+        //#if defined(HEX_NANO)
+        debug[3] = 777;
         getEstimatedAltitude();
         /*
         sonarAlt = hex_nano_get_refined_height() ;
         debug[2] = sonarAlt;
         debug[0] = 111;
         */
-        #endif
+       // #endif
         break;
     }
   }
