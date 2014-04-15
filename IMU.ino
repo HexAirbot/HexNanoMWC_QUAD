@@ -273,8 +273,6 @@ uint8_t getEstimatedAltitude(){
   if (dTime < UPDATE_INTERVAL) return 0;
   previousT = currentT;
   
-  debug[2] = EstAlt;
-  
   debug[1] = hex_nano_get_refined_height();
   
   EstAlt = EstAlt * alpha + hex_nano_get_refined_height() * (1 - alpha); // additional LPF to reduce baro noise (faster by 30 µs)
