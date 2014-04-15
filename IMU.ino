@@ -273,11 +273,11 @@ uint8_t getEstimatedAltitude(){
   if (dTime < UPDATE_INTERVAL) return 0;
   previousT = currentT;
   
-  EstAlt = EstAlt * 0.2 + hex_nano_get_refined_height() * 0.8; // additional LPF to reduce baro noise (faster by 30 µs)
+  EstAlt = EstAlt * 0.5 + hex_nano_get_refined_height() * 0.5; // additional LPF to reduce baro noise (faster by 30 µs)
   debug[2] = EstAlt;
 
   #if (defined(VARIOMETER) && (VARIOMETER != 2)) || !defined(SUPPRESS_BARO_ALTHOLD)
-    int16_t targetVel = constrain(AltHold - EstAlt, -100, 100);
+    int16_t targetVel = constrain(AltHold - EstAlt, -300, 300);
     
     // projection of ACC vector to global Z, with 1G subtructed
     // Math: accZ = A * G / |G| - 1G
@@ -351,10 +351,12 @@ uint8_t getEstimatedAltitude(){
     BaroPID -= constrain(conf.D8[PIDALT] * vel_tmp >>4, -150, 150);
     */
     
+    /*
     int16_t acc_tmp = (vel - previewVel) * 1000000.0f / dTime;
     applyDeadband(acc_tmp, 5);
     
     BaroPID -= constrain(conf.D8[PIDALT] * acc_tmp >>4, -400, 400);
+   */
    
   #endif
   return 1;
