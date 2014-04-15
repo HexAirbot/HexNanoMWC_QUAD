@@ -67,6 +67,9 @@ const uint32_t PROGMEM capability = 0+BIND_CAPABLE;
 #define MSP_TRIM_DOWN            154
 #define MSP_TRIM_LEFT            155
 #define MSP_TRIM_RIGHT           156
+
+#define MSP_READ_TEST_PARAM      189
+#define MSP_SET_TEST_PARAM       190
 #endif
 
 #define MSP_SET_RAW_RC           200   //in message          8 rc chan
@@ -232,6 +235,35 @@ void evaluateCommand() {
      break;
  
    #if defined(HEX_NANO)
+   case MSP_READ_TEST_PARAM:
+     headSerialReply(12);
+     
+     blinkLED(15,20,1);
+    
+     paramList[0] = alpha * 250.f;
+     paramList[1] = conf.P8[PIDALT] * 250.f / 200;
+     paramList[2] = conf.I8[PIDALT];
+     paramList[3] = conf.D8[PIDALT] * 250.f / 100;
+     
+     for(int idx = 0; idx < 12; idx++){
+       serialize8(paramList[idx]);
+     } 
+     
+     break;
+   case MSP_SET_TEST_PARAM:
+     for(int idx = 0; idx < 12; idx++){
+       paramList[idx] = read8();
+     }
+     
+     blinkLED(15,20,1);
+     
+     alpha = paramList[0] / 250.f;
+     conf.P8[PIDALT] = paramList[1] / 250.f * 200;   //0~200
+     conf.I8[PIDALT] = paramList[2];                 //0~250
+     conf.D8[PIDALT] = paramList[3] / 250.f * 100;   //0~100
+     writeParams(0);
+     return;
+     break;
    case MSP_SET_RAW_RC_TINY:
      for(uint8_t i = 0;i < 4;i++) {
        serialRcValue[i] = 1000 + read8() * 4;

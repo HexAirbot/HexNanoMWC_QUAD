@@ -20,6 +20,8 @@ March  2013     V2.2
 
 #if defined(HEX_NANO)
 volatile uint16_t serialRcValue[RC_CHANS] = {1502, 1502, 1502, 1502, 1502, 1502, 1502, 1502}; 
+float alpha = 0.5;
+uint8_t paramList[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #endif
 
 /*********** RC alias *****************/

@@ -273,7 +273,7 @@ uint8_t getEstimatedAltitude(){
   if (dTime < UPDATE_INTERVAL) return 0;
   previousT = currentT;
   
-  EstAlt = EstAlt * 0.5 + hex_nano_get_refined_height() * 0.5; // additional LPF to reduce baro noise (faster by 30 µs)
+  EstAlt = EstAlt * alpha + hex_nano_get_refined_height() * (1 - alpha); // additional LPF to reduce baro noise (faster by 30 µs)
   debug[2] = EstAlt;
 
   #if (defined(VARIOMETER) && (VARIOMETER != 2)) || !defined(SUPPRESS_BARO_ALTHOLD)
