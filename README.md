@@ -24,7 +24,7 @@ git clone https://github.com/HexAirbot/HexNanoMWC_QUAD.git
  
  2.Download the source code here, and put all the source files (.ino file) under folder HexNanoMWC_QUAD.
 
- 3.Open the main file HexNanoMWC_HEX.ino with the Arduino IDE, and the IDE will also automatically open other source files.
+ 3.Open the main file HexNanoMWC_QUAD.ino with the Arduino IDE, and the IDE will also automatically open other source files.
    
  4.Connect your Flexbot via USB
  
@@ -34,7 +34,9 @@ git clone https://github.com/HexAirbot/HexNanoMWC_QUAD.git
  6.Click the verify and then the upload button
 
 ##Development
-The FlexBot Project is open source.To contribute, you can send a pull request on Github, or share your idea to the [forum](http://makedesignshare.com).
+The FlexBot Project is open source.
+
+To contribute, you can send a pull request on Github, or share your idea to the [forum](http://makedesignshare.com).
 
 
 ##Support
