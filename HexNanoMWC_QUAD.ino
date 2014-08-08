@@ -17,8 +17,13 @@ March  2013     V2.2
 #include <avr/pgmspace.h>
 #define  VERSION  220
 
+
 #if defined(HEX_NANO)
 volatile uint16_t serialRcValue[RC_CHANS] = {1502, 1502, 1502, 1502, 1502, 1502, 1502, 1502}; 
+float alpha = 0.95;
+uint8_t paramList[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int16_t absolutedAccZ = 0;
+uint8_t flightState = 0;
 #endif
 
 /*********** RC alias *****************/
