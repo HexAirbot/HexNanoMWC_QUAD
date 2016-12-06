@@ -2,8 +2,7 @@ HexNanoMWC_QUAD
 ===============
 
 A modified MWC2.2 flight control for FlexBot quad board.
-
-And the project is one part of the [FlexBot Project](http://http://flexbot.cc/wiki/).
+This project is one part of the [FlexBot Project](http://http://flexbot.cc/wiki/).
 
 ##Source Code
 
@@ -20,28 +19,20 @@ git clone https://github.com/HexAirbot/HexNanoMWC_QUAD.git
 
 ####How to compile 
 
- 1.Download the Arduino IDE (you should use the version 1.0.5+)
- 
- 2.Download the source code here, and put all the source files (.ino file) under folder HexNanoMWC_QUAD.
-
- 3.Open the main file HexNanoMWC_QUAD.ino with the Arduino IDE, and the IDE will also automatically open other source files.
-   
- 4.Connect your Flexbot via USB
- 
- 5.Set the Board in your IDE to Arduino Leonardo
-   Select the correct COM Port
-  
- 6.Click the verify and then the upload button
+- Download the [Arduino IDE](https://www.arduino.cc/en/Main/Software) (you should use the version 1.0.5+)
+- Download the source code here, and put all the source files (.ino file) under folder HexNanoMWC_QUAD.
+- Open the main file HexNanoMWC_QUAD.ino with the Arduino IDE, and the IDE will also automatically open other source files.
+- Connect your Flexbot via USB
+- Set the Board in your IDE to `Arduino Leonardo`.
+  Select the correct COM Port
+- Click the verify and then the upload button
 
 ##Development
 The FlexBot Project is open source.
 
 To contribute, you can send a pull request on Github, or share your idea to the [forum](http://makedesignshare.com).
 
-
 ##Support
-[Website](http://flexbot.cc)
-
-[Wiki](http://flexbot.cc/wiki)
-
-[Forum](http://makedesignshare.com)
+- [Website](http://flexbot.cc)
+- [Wiki](http://flexbot.cc/wiki)
+- [Forum](http://makedesignshare.com)
